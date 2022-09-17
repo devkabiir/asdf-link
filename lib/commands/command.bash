@@ -41,10 +41,10 @@ function main() {
     _asdf_link_system_tool_if_not_exists "$tool"
 
     # if the version already exists, we remove it to clear stale shims.
-    if asdf list "$tool" "$version" | grep -q "$version"; then
+    if asdf list "$tool" "$version" 2>/dev/null | grep -q "$version"; then
         asdf uninstall "$tool" "$version"
     fi
-    asdf install "$tool" "$version"
+    asdf install "$tool" "$version" 1>/dev/null
 
     dest_path=$(asdf where "$tool" "$version")/bin/
 
