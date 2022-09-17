@@ -1,7 +1,4 @@
 # asdf-link
-[![help maintain this lib](https://img.shields.io/badge/looking%20for%20maintainer-DM%20%40vborja-663399.svg)](https://twitter.com/vborja)
-
-
 Generic plugin for versioning system tools with [asdf](https://github.com/asdf-vm/asdf).
 
 ## About
@@ -24,7 +21,69 @@ In these cases you might still want to use the convenient ASDF `.tool-versions` 
 enable the right tool per project or system wide, so that you just cd into the
 working directory of your like and let asdf select the right executable for you.
 
-## Install
+## Installation
+```shell
+asdf plugin add link https://github.com/devkabiir/asdf-link
+```
+
+## Usage
+The usage is quite simple, you have to run:
+```shell
+asdf link <tool-name> <version-name> <...shim-paths>
+```
+where
+- `tool-name` is the name you want to use in asdf, it shall be unique and not
+  conflicting with other asdf plugins.
+- `version-name` the first version you want to be made available in asdf.
+  Defaults to `latest`
+- `shim-paths` space separated directory paths where binaries can be found for
+  the tool, asdf will create shims for such binaries.
+  Defaults to `$PWD`
+
+You can run the same command multiple times as well, as it's idempotent in
+nature. The result will be as expected.  
+This is particularly handy when building/developing a tool locally and you want
+to link it with asdf.
+
+## Example
+Suppose you want to build and install [zls](https://github.com/zigtools/zls) for
+your M1 Mac and the binaries are not available.
+```shell
+# Clone
+git clone https://github.com/zigtools/zls
+cd zls
+
+# We need master version of zig to build zls
+asdf local zig master
+# Build
+zig build -Drelease-safe
+
+# The output binary will be ./zig-out/bin/zls
+# We only need to provide the parent directory.
+asdf link zls master ./zig-out/bin
+```
+
+That's it! you now have a local master build of zls installed in asdf.  
+Using your new tool is the same as any other asdf plugin.
+```shell
+# For global installs
+asdf global zls master
+
+# For local installs
+asdf local zls master
+
+# Check version
+zls --version # 0.10.0-dev.238+0428b97
+```
+
+When you want to update `zls`, build it again and if the binaries dont have
+different paths or names you dont have to do anything. If the binary names/paths
+change you can run the command to link again 
+```shell
+asdf link zls master ./zig-out/bin ./other-path/bin
+```
+
+## Custom Install
 
 The first thing you have to do is to think of a good name. That is the name of the
 tool you will be selecting versions for. Say `jdk`, `perl`, `android`, etc.
@@ -32,16 +91,14 @@ tool you will be selecting versions for. Say `jdk`, `perl`, `android`, etc.
 ```shell
 ## READ above before copy-paste this line
 # You can execute this as many times as you want with different names
-$ asdf plugin-add NAME https://github.com/vic/asdf-link.git
+$ asdf plugin-add NAME https://github.com/devkabiir/asdf-link
 ```
 
 This can be anything, from now on, these examples will be for `jdk`.
 
 ```shell
-$ asdf plugin-add jdk https://github.com/vic/asdf-link.git
+$ asdf plugin-add jdk https://github.com/devkabiir/asdf-link
 ```
-
-## Usage
 
 Now if you execute `asdf list-all jdk` you will notice it will only say `link`.
 That is because we cannot possibly know which versions are available. And actually,
@@ -60,7 +117,7 @@ To use them, lets tell ASDF about their existance with:
 
 ```shell
 $ asdf install jdk 1.9
-Link your system binaries to /Users/vic/.asdf/installs/jdk/1.9/bin
+Link your system binaries to /Users/devkabiir/.asdf/installs/jdk/1.9/bin
 ```
 
 As previously mentioned, this plugin lets you install *any* version,
@@ -69,7 +126,7 @@ we link (hence the plugin name) our versioned binaries into that `bin/` director
 
 ```shell
 # linking all the java tools into the 1.9 versioned bin/
-$ ln -vs /Library/Java/JavaVirtualMachines/jdk-9.jdk/Contents/Home/bin/* /Users/vic/.asdf/installs/jdk/1.9/bin/
+$ ln -vs /Library/Java/JavaVirtualMachines/jdk-9.jdk/Contents/Home/bin/* /Users/devkabiir/.asdf/installs/jdk/1.9/bin/
 
 # after this, just reshim
 $ asdf reshim jdk
@@ -82,11 +139,11 @@ documentaion for more on managing versions.
 
 The advantage of using this plugin is that even if you have *lots* of binaries on `/usr/local/bin`,
 by hand-picking and linking them inside the plugin's `bin/` directory, you get shims for free. The
-following is the [travis test](https://github.com/vic/asdf-link/blob/master/.travis.yml) we use, linking perl.
+following is the [travis test](https://github.com/devkabiir/asdf-link/blob/master/.travis.yml) we use, linking perl.
 
 ```shell
 # perla is spanish for perl
-$ asdf plugin-add perla https://github.com/vic/asdf-link.git
+$ asdf plugin-add perla https://github.com/devkabiir/asdf-link
 $ asdf install perla 5.18
 $ ln -s /usr/bin/perl5.18 ~/.asdf/installs/perla/5.18/bin/perla
 $ asdf reshim
